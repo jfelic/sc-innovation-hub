@@ -1,0 +1,59 @@
+Core Framework & Language
+- next - React framework with server-side rendering, routing, and API routes
+- react & react-dom - React library for building user interfaces
+- typescript - Adds type safety to JavaScript, catches errors during development
+- @types/node, @types/react, @types/react-dom - TypeScript type definitions
+
+Styling & UI Framework
+- tailwindcss - Utility-first CSS framework for rapid styling
+- @tailwindcss/postcss - PostCSS plugin for Tailwind processing
+- class-variance-authority - Creates reusable component variants (different button styles, etc.)
+- clsx - Utility for conditionally combining CSS classes
+- tailwind-merge - Intelligently merges Tailwind classes to prevent conflicts
+
+UI Components
+- lucide-react - Beautiful, consistent icon library
+- @radix-ui/react-* packages:
+
+	- react-dropdown-menu - Accessible dropdown menus (user profiles, filters)
+	- react-dialog - Modal windows (event details, forms)
+	- react-select - Dropdown selectors (regions, industries)
+	- react-tabs - Tab navigation (events/companies/map views)
+	- react-tooltip - Helpful hints on hover
+	- react-popover - Info cards that appear on demand
+
+Database & Backend
+- prisma - Database toolkit and ORM (Object-Relational Mapping)
+- @prisma/client - Generated database client for type-safe queries
+- next-auth - Authentication system for Next.js
+- @auth/prisma-adapter - Connects NextAuth with Prisma database
+
+Data Validation
+- zod - TypeScript-first schema validation (validates scraped data before database insertion)
+
+Development Tools
+- eslint & eslint-config-next - Code linting to catch errors and enforce consistent style
+- @eslint/eslintrc - ESLint configuration utilities
+
+Data Scraping & External APIs
+- Firecrawl API - AI-powered web scraping service (uses native fetch, no package needed)
+	- Scrapes SC tech websites for events and company information
+	- Handles JavaScript-heavy sites automatically
+	- Returns structured data instead of raw HTML
+	- Why critical: Core functionality for aggregating content from multiple sources
+
+
+Why These Dependencies?
+For Data Scraping & Validation
+- Zod validates data from Firecrawl before it goes into your database
+- Prisma provides type-safe database operations for storing events, companies, users
+
+For User Interface
+- Radix UI gives you accessible, professional components without starting from scratch
+- Tailwind enables rapid, responsive styling
+- Lucide provides consistent icons throughout the app
+
+For Developer Experience
+- TypeScript catches bugs during development instead of in production
+- ESLint maintains code quality and consistency
+- Next.js handles routing, API endpoints, and deployment optimization
