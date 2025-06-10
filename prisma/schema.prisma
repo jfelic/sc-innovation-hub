@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// This tells Prisma how to generate the client code
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+// Tells Prisma what database you're using
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTHENTICATION MODELS (Required by NextAuth)
+// ============================================
+
+// Main user table - stores user accounts
+model User {
+  id        String    @id @default(cuid()) // Unique ID for each user
+  email     String    @unique              // Email must be unique
+  name      String?                        // Optional name
+  image     String?                        // Profile picture URL
+  createdAt DateTime  @default(now())      // when user signed up
+  updatedAt DateTime  @updatedAt           // Auto-updates when user changes
+
+  // Relationships - connect to other tables
+  accounts            Account[]            // OAuth accounts (Google, GitHub, etc.)
+  sessions            Session[]            // Login sessions
+  bookmarkedEvents    EventBookmark[]      // Events user has saved
+  bookmarkedCompanies CompanyBookmark[]    // Companies user has saved
+
+  @@map("users") // Actual table name in database
+}
