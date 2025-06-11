@@ -16,24 +16,184 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================
+// ========================================
 // AUTHENTICATION MODELS (Required by NextAuth)
-// ============================================
+// ========================================
 
 // Main user table - stores user accounts
 model User {
-  id        String    @id @default(cuid()) // Unique ID for each user
-  email     String    @unique              // Email must be unique
+  id        String   @id @default(cuid())  // Unique ID for each user
+  email     String   @unique               // Email must be unique
   name      String?                        // Optional name
   image     String?                        // Profile picture URL
-  createdAt DateTime  @default(now())      // when user signed up
-  updatedAt DateTime  @updatedAt           // Auto-updates when user changes
+  createdAt DateTime @default(now())       // When user signed up
+  updatedAt DateTime @updatedAt            // Auto-updates when user changes
 
   // Relationships - connect to other tables
-  accounts            Account[]            // OAuth accounts (Google, GitHub, etc.)
-  sessions            Session[]            // Login sessions
-  bookmarkedEvents    EventBookmark[]      // Events user has saved
-  bookmarkedCompanies CompanyBookmark[]    // Companies user has saved
+  accounts            Account[]           // OAuth accounts (Google, GitHub, etc.)
+  sessions            Session[]           // Login sessions
+  bookmarkedEvents    EventBookmark[]     // Events user has saved
+  bookmarkedCompanies CompanyBookmark[]   // Companies user has saved
 
-  @@map("users") // Actual table name in database
+  @@map("users")  // Actual table name in database
+}
+
+// OAuth account information (Google, GitHub, etc.)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String                    // Links to User
+  type              String                    // "oauth", "email", etc.
+  provider          String                    // "google", "github", etc.
+  providerAccountId String                    // ID from OAuth provider
+  refresh_token     String? @db.Text          // For refreshing access
+  access_token      String? @db.Text          // For API calls
+  expires_at        Int?                      // Token expiration
+  token_type        String?                   // Usually "Bearer"
+  scope             String?                   // Permissions granted
+  id_token          String? @db.Text          // Identity token
+  session_state     String?                   // Session info
+
+  // Connect to User table
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])  // Prevent duplicate accounts
+  @@map("accounts")
+}
+
+// User login sessions
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique              // Unique session identifier
+  userId       String                        // Which user this session belongs to
+  expires      DateTime                      // When session expires
+  
+  // Connect to User table
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// For email verification and password resets
+model VerificationToken {
+  identifier String    // Email or phone number
+  token      String   @unique              // Verification code
+  expires    DateTime                      // When token expires
+
+  @@unique([identifier, token])           // Each identifier can have one token
+  @@map("verification_tokens")
+}
+
+// ========================================
+// BUSINESS MODELS (Your main application data)
+// ========================================
+
+// Companies in the SC innovation ecosystem
+model Company {
+  id          String   @id @default(cuid())
+  name        String                        // Company name
+  description String?  @db.Text             // What they do
+  website     String?                       // Company website
+  industry    String?                       // "tech", "ai", "cyber", etc.
+  size        String?                       // "startup", "small", "medium", "large"
+  founded     Int?                          // Year founded
+  
+  // Location information
+  address     String?                       // Street address
+  city        String                        // Required: Mount Pleasant, Charleston, etc.
+  state       String   @default("SC")       // Default to South Carolina
+  zipCode     String?                       // Postal code
+  latitude    Float?                        // For map display
+  longitude   Float?                        // For map display
+  
+  // Metadata
+  isVerified  Boolean  @default(false)      // Has this been verified by admin?
+  logoUrl     String?                       // Company logo
+  createdAt   DateTime @default(now())      // When added to database
+  updatedAt   DateTime @updatedAt           // Last updated
+  
+  // Data source tracking (important for your scraping)
+  sourceUrl   String?                       // Where we found this company
+  sourceType  String   @default("manual")   // "manual", "scraped", "api"
+
+  // Relationships
+  events      Event[]                       // Events this company hosts
+  bookmarks   CompanyBookmark[]             // Users who bookmarked this company
+
+  @@map("companies")
+}
+
+// Events in the SC tech ecosystem
+model Event {
+  id          String   @id @default(cuid())
+  title       String                        // Event name
+  description String?  @db.Text             // Event details
+  startDate   DateTime                      // When event starts
+  endDate     DateTime?                     // When event ends (optional for single-day)
+  
+  // Location information
+  venue       String?                       // Event venue name
+  address     String?                       // Street address
+  city        String                        // Required: where the event is
+  state       String   @default("SC")       // Default to South Carolina
+  isVirtual   Boolean  @default(false)      // Online event?
+  eventUrl    String?                       // Registration/info URL
+  
+  // Categorization (important for filtering)
+  category    String                        // "tech", "ai", "cyber", "innovation", "networking"
+  tags        String[]                      // Array for flexible tagging
+  
+  // Organization
+  organizerId String?                       // Which company is hosting
+  organizer   Company? @relation(fields: [organizerId], references: [id])
+  
+  // Metadata
+  isPublic    Boolean  @default(true)       // Should this be visible to all?
+  isFeatured  Boolean  @default(false)      // Highlight this event?
+  createdAt   DateTime @default(now())      // When added to database
+  updatedAt   DateTime @updatedAt           // Last updated
+  
+  // Data source tracking
+  sourceUrl   String?                       // Where we scraped this from
+  sourceType  String   @default("manual")   // "manual", "scraped", "api"
+
+  // Relationships
+  bookmarks   EventBookmark[]               // Users who bookmarked this event
+
+  @@map("events")
+}
+
+// ========================================
+// BOOKMARK MODELS (User saves events/companies)
+// ========================================
+
+// When users bookmark events
+model EventBookmark {
+  id      String @id @default(cuid())
+  userId  String                           // Which user
+  eventId String                           // Which event
+  
+  // Relationships
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())       // When bookmarked
+
+  @@unique([userId, eventId])             // User can only bookmark event once
+  @@map("event_bookmarks")
+}
+
+// When users bookmark companies
+model CompanyBookmark {
+  id        String @id @default(cuid())
+  userId    String                         // Which user
+  companyId String                         // Which company
+  
+  // Relationships
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())       // When bookmarked
+
+  @@unique([userId, companyId])           // User can only bookmark company once
+  @@map("company_bookmarks")
 }
