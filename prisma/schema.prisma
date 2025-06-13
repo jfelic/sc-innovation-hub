@@ -24,7 +24,9 @@ datasource db {
 model User {
   id        String   @id @default(cuid())  // Unique ID for each user
   email     String   @unique               // Email must be unique
-  name      String?                        // Optional name
+  password  String?                        // Password
+  firstName String?                        // Optional name
+  lastName  String?                        // Optional name
   image     String?                        // Profile picture URL
   createdAt DateTime @default(now())       // When user signed up
   updatedAt DateTime @updatedAt            // Auto-updates when user changes
