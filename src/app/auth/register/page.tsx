@@ -92,7 +92,7 @@ export default function RegisterPage() {
           )}
 
           {/* Input fields */}
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="rounded-md space-y-4">
             {/* First and last name fields side by side */}
             <div className="grid grid-cols-2 gap-4">
               {/* First Name */}
