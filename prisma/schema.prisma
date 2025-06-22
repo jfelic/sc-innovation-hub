@@ -92,9 +92,9 @@ model VerificationToken {
 // Companies in the SC innovation ecosystem
 model Company {
   id          String   @id @default(cuid())
-  name        String                        // Company name
-  description String?  @db.Text             // What they do
-  website     String?                       // Company website
+  name        String   @unique
+  description String?
+  website     String?
   industry    String?                       // "tech", "ai", "cyber", etc.
   size        String?                       // "startup", "small", "medium", "large"
   founded     Int?                          // Year founded
