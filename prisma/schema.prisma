@@ -95,20 +95,16 @@ model Company {
   name        String   @unique
   description String?
   website     String?
-  industry    String?                       // "tech", "ai", "cyber", etc.
-  size        String?                       // "startup", "small", "medium", "large"
+  industry    String[]                      // An array of industries 
+  size        Int?                          // Number of employees
   founded     Int?                          // Year founded
   
   // Location information
-  address     String?                       // Street address
-  city        String                        // Required: Mount Pleasant, Charleston, etc.
-  state       String   @default("SC")       // Default to South Carolina
-  zipCode     String?                       // Postal code
-  latitude    Float?                        // For map display
-  longitude   Float?                        // For map display
+  address     String?                          // Street address
+  city        String   @default("Charleston")           // Required: Mount Pleasant, Charleston, etc.
+  state       String   @default("South Carolina")       // Default to South Carolina
   
   // Metadata
-  isVerified  Boolean  @default(false)      // Has this been verified by admin?
   logoUrl     String?                       // Company logo
   createdAt   DateTime @default(now())      // When added to database
   updatedAt   DateTime @updatedAt           // Last updated

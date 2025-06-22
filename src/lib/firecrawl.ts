@@ -17,7 +17,7 @@ export async function scrapeAndSyncCompanies() {
     formats: ['json'],
     jsonOptions: { 
       schema: firecrawlScrapeSchema,
-      prompt: "Extract all the companies listed on the page with their name, description, and website. The location for all companies is Charleston, SC."
+      prompt: "Extract all the companies listed on the page. For each company, provide its name, a brief description, website URL, industry, company size (e.g., employee count), the year it was founded, and a URL for its logo. The location for all companies is Charleston, SC."
     }
   });
 
@@ -45,6 +45,10 @@ export async function scrapeAndSyncCompanies() {
         update: {
             description: company.description,
             website: company.website,
+            industry: company.industry,
+            size: company.size,
+            founded: company.founded,
+            logoUrl: company.logoUrl,
             sourceType: 'SCRAPED',
             sourceUrl: urlToScrape,
         },
@@ -52,8 +56,12 @@ export async function scrapeAndSyncCompanies() {
             name: company.name,
             description: company.description,
             website: company.website,
+            industry: company.industry,
+            size: company.size,
+            founded: company.founded,
+            logoUrl: company.logoUrl,
             city: 'Charleston',
-            state: 'South Carolina',
+            state: 'SC',
             sourceType: 'SCRAPED',
             sourceUrl: urlToScrape,
             isVerified: true, // Assuming scraped data is trusted
