@@ -17,7 +17,7 @@ export async function scrapeAndSyncCompanies() {
     formats: ['json'],
     jsonOptions: { 
       schema: firecrawlScrapeSchema,
-      prompt: "Extract all the companies listed on the page. For each company, provide its name, a brief description, website URL, industry, company size (e.g., employee count), the year it was founded, and a URL for its logo. The location for all companies is Charleston, SC."
+      prompt: "Extract all the companies listed on the page. For each company, provide its name, a brief description, website URL, a list of industries it belongs to, size (e.g., employee count.), the year it was founded, the street address, the city where the company is located, the state where the company is located, and the URL for the logo."
     }
   });
 
@@ -48,6 +48,9 @@ export async function scrapeAndSyncCompanies() {
             industry: company.industry,
             size: company.size,
             founded: company.founded,
+            address: company.address,
+            city: company.city,
+            state: company.state,
             logoUrl: company.logoUrl,
             sourceType: 'SCRAPED',
             sourceUrl: urlToScrape,
@@ -59,12 +62,12 @@ export async function scrapeAndSyncCompanies() {
             industry: company.industry,
             size: company.size,
             founded: company.founded,
+            address: company.address,
+            city: company.city,
+            state: company.state,
             logoUrl: company.logoUrl,
-            city: 'Charleston',
-            state: 'SC',
             sourceType: 'SCRAPED',
             sourceUrl: urlToScrape,
-            isVerified: true, // Assuming scraped data is trusted
         },
     });
     // This logic doesn't distinguish between created and updated,
