@@ -40,7 +40,7 @@ export function BusinessCard({ company }: BusinessCardProps) {
             {company.description && <p className="text-sm text-muted-foreground">{company.description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2 md:flex-row">
-            <Button variant="destructive">
+            <Button>
                 More info
             </Button>
         </div>
