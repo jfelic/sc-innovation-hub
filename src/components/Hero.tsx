@@ -1,4 +1,7 @@
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 export function Hero() {
   return (
@@ -8,17 +11,20 @@ export function Hero() {
           Connect With Innovative Companies in SC
         </h1>
         <form className="flex justify-center">
-          <input
-            type="text"
-            placeholder="Search companies, categories, or counties..."
-            className="w-full max-w-md px-4 py-3 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <button
-            type="submit"
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-r-lg hover:bg-blue-700 transition"
-          >
-            Search
-          </button>
+          <div className="flex w-full max-w-md">
+            <Input
+              type="text"
+              placeholder="Search companies, categories, or counties..."
+              className="rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+            <Button
+              type="submit"
+              className="rounded-l-none bg-blue-600 hover:bg-blue-700"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </div>
         </form>
       </div>
     </section>
