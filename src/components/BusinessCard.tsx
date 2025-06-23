@@ -27,7 +27,10 @@ export function BusinessCard({ company }: BusinessCardProps) {
       <CardHeader>
         <CardTitle>{company.name}</CardTitle>
         <CardDescription>
-          {company.industry.join(', ')} • {company.city}
+          {company.industry.join(', ')}
+        </CardDescription>
+        <CardDescription>
+          {company.city}, {company.state}
         </CardDescription>
         {company.size && (
           <CardDescription>
@@ -39,7 +42,7 @@ export function BusinessCard({ company }: BusinessCardProps) {
         <div>
             {company.description && <p className="text-sm text-muted-foreground">{company.description}</p>}
         </div>
-        <div className="flex flex-wrap items-center gap-2 md:flex-row">
+        <div className="flex flex-wrap items-center gap-2 md:flex-row mt-4">
             <Button>
                 More info
             </Button>

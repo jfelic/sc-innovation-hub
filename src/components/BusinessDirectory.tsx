@@ -7,34 +7,36 @@ import { BusinessDirectoryClient } from "./BusinessDirectoryClient";
  */
 export async function BusinessDirectory() {
   // Fetch all companies from the database, ordered alphabetically by name.
-  const companies = await prisma.company.findMany({
+  const rawCompanies = await prisma.company.findMany({
     orderBy: {
       name: 'asc'
     }
   });
 
-  // To build the category filter, we need a unique list of all industries.
+  // Apply defaults for empty city and state values
+  const companies = rawCompanies.map(company => ({
+    ...company,
+    city: company.city && company.city.trim() !== "" ? company.city : "Charleston",
+    state: company.state && company.state.trim() !== "" ? company.state : "SC"
+  }));
+
+  // To build the industry filter, we need a unique list of all industries.
   const industryData = await prisma.company.findMany({
     select: {
       industry: true,
     },
   });
-  const categories = [...new Set(industryData.flatMap(c => c.industry))].sort();
+  const industries = [...new Set(industryData.flatMap(c => c.industry))].sort();
 
   // To build the city filter, we need a unique list of all cities.
-  const cityData = await prisma.company.findMany({
-    select: {
-      city: true,
-    },
-    distinct: ['city'],
-  });
-  const cities = cityData.map(c => c.city).sort();
+  // Now we can get distinct cities after applying defaults
+  const cities = [...new Set(companies.map(c => c.city))].sort();
 
   // Pass all the fetched data to the client component
   return (
     <BusinessDirectoryClient 
       companies={companies}
-      categories={categories}
+      industries={industries}
       cities={cities}
     />
   );

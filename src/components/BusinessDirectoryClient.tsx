@@ -18,41 +18,40 @@ interface Company {
   city: string;
   state: string;
   logoUrl: string | null;
-  phone: string | null;
-  email: string | null;
-  linkedin: string | null;
-  sourceUrl: string;
+  sourceUrl: string | null;
   sourceType: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface BusinessDirectoryClientProps {
   companies: Company[];
-  categories: string[];
+  industries: string[];
   cities: string[];
 }
 
-export function BusinessDirectoryClient({ companies, categories, cities }: BusinessDirectoryClientProps) {
+export function BusinessDirectoryClient({ companies, industries, cities }: BusinessDirectoryClientProps) {
   return (
     // Main container for the directory layout
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex gap-8">
       {/* Sidebar for filtering options */}
       <aside className="w-1/3 max-w-xs space-y-6">
-        {/* Category Filter Section */}
+        {/* Industry Filter Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Category</CardTitle>
+            <CardTitle className="text-lg">Industry</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {/* Map over the unique categories to create checkboxes */}
-              {categories.map(cat => (
-                <div key={cat} className="flex items-center space-x-2">
-                  <Checkbox id={`category-${cat}`} />
+              {/* Map over the unique industries to create checkboxes */}
+              {industries.map(industry => (
+                <div key={industry} className="flex items-center space-x-2">
+                  <Checkbox id={`industry-${industry}`} />
                   <Label 
-                    htmlFor={`category-${cat}`} 
+                    htmlFor={`industry-${industry}`} 
                     className="text-sm font-normal cursor-pointer"
                   >
-                    {cat}
+                    {industry}
                   </Label>
                 </div>
               ))}
