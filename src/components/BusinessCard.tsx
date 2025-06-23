@@ -23,9 +23,11 @@ interface BusinessCardProps {
  */
 export function BusinessCard({ company }: BusinessCardProps) {
   return (
-    <Card className="w-full max-w-sm shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{company.name}</CardTitle>
+        <div className="flex items-center space-x-4 font-bold">
+          <CardTitle>{company.name}</CardTitle>
+        </div>
         <CardDescription>
           {company.industry.join(', ')}
         </CardDescription>
@@ -40,11 +42,14 @@ export function BusinessCard({ company }: BusinessCardProps) {
       </CardHeader>
       <CardContent>
         <div>
-            {company.description && <p className="text-sm text-muted-foreground">{company.description}</p>}
+            {company.description && <p className="text-sm">{company.description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2 md:flex-row mt-4">
-            <Button>
-                More info
+            <Button 
+          style={{ backgroundColor: '#0B4168' }} 
+          className="hover:bg-blue-800 hover:scale-105 transition-all duration-200"
+            >
+          More info
             </Button>
         </div>
       </CardContent>
