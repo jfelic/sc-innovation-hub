@@ -2,16 +2,21 @@ import FirecrawlApp from '@mendable/firecrawl-js';
 import { prisma } from './db';
 import { firecrawlScrapeSchema } from './firecrawl_data_validation';
 
+const urlToScrape = 'https://builtin.com/companies/type/app-development-companies/artificial-intelligence-companies/big-data-analytics-companies/biotech-companies/blockchain-companies/cloud-companies/computer-vision-companies/cryptocurrency-companies/cybersecurity-companies/database-companies/design-companies/edtech-companies/fintech-companies/gaming-companies/greentech-companies/healthtech-companies/information-technology-companies/iot-companies/legal-tech-companies/software-companies/virtual-reality-companies/web3-companies?city=Charleston&state=South+Carolina&country=USA';
+
 export async function scrapeAndSyncCompanies() {
+  console.log("Starting Firecrawl scrape and sync...");
+
   if (!process.env.FIRECRAWL_API_KEY) {
     throw new Error('FIRECRAWL_API_KEY is not set in environment variables.');
   }
 
+  // Initialize Firecrawl with the API key
+  console.log('Initializing Firecrawl with API key...');
   const app = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY });
 
-  const urlToScrape = 'https://builtin.com/companies/type/app-development-companies/artificial-intelligence-companies/big-data-analytics-companies/biotech-companies/blockchain-companies/cloud-companies/computer-vision-companies/cryptocurrency-companies/cybersecurity-companies/database-companies/design-companies/edtech-companies/fintech-companies/gaming-companies/greentech-companies/healthtech-companies/information-technology-companies/iot-companies/legal-tech-companies/software-companies/virtual-reality-companies/web3-companies?city=Charleston&state=South+Carolina&country=USA';
 
-  console.log(`Scraping URL: ${urlToScrape}`);
+  console.log(`Scraping URL: ${urlToScrape}...`);
 
   const scrapeResult = await app.scrapeUrl(urlToScrape, {
     formats: ['json'],
@@ -35,9 +40,6 @@ export async function scrapeAndSyncCompanies() {
 
   const { companies } = parsedData.data;
   console.log(`Found ${companies.length} companies.`);
-
-  let createdCount = 0;
-  let updatedCount = 0;
 
   for (const company of companies) {
     await prisma.company.upsert({

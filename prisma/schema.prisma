@@ -100,7 +100,7 @@ model Company {
   founded     Int?                          // Year founded
   
   // Location information
-  address     String?                          // Street address
+  address     String?                                   // Street address
   city        String   @default("Charleston")           // Required: Mount Pleasant, Charleston, etc.
   state       String   @default("South Carolina")       // Default to South Carolina
   

@@ -1,4 +1,4 @@
-import { scrapeAndSyncCompanies } from '@/lib/firecrawl';
+import { scrapeAndSyncCompanies } from '@/lib/firecrawl_scrape';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
