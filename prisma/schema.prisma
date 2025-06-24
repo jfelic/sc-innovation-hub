@@ -114,7 +114,7 @@ model Company {
   sourceType  String   @default("manual")   // "manual", "scraped", "api"
 
   // Relationships
-  events      Event[]                       // Events this company hosts
+  // events      Event[]                       // Events this company hosts
   bookmarks   CompanyBookmark[]             // Users who bookmarked this company
 
   @@map("companies")
@@ -122,41 +122,39 @@ model Company {
 
 // Events in the SC tech ecosystem
 model Event {
-  id          String   @id @default(cuid())
-  title       String                        // Event name
-  description String?  @db.Text             // Event details
-  startDate   DateTime                      // When event starts
-  endDate     DateTime?                     // When event ends (optional for single-day)
+  id String @id @default(cuid())
+  title String // Event name
+  description String? @db.Text // Event details
+  startDate DateTime // When event starts
+  endDate DateTime? // When event ends (optional for single-day)
   
   // Location information
-  venue       String?                       // Event venue name
-  address     String?                       // Street address
-  city        String                        // Required: where the event is
-  state       String   @default("SC")       // Default to South Carolina
-  isVirtual   Boolean  @default(false)      // Online event?
-  eventUrl    String?                       // Registration/info URL
+  venue String? // Event venue name
+  address String? // Street address
+  city String // Required: where the event is
+  state String @default("SC") // Default to South Carolina
+  isVirtual Boolean @default(false) // Online event?
+  eventUrl String? // Registration/info URL
   
   // Categorization (important for filtering)
-  category    String                        // "tech", "ai", "cyber", "innovation", "networking"
-  tags        String[]                      // Array for flexible tagging
+  industry String[] // "tech", "ai", "cyber", "innovation", "networking"
   
-  // Organization
-  organizerId String?                       // Which company is hosting
-  organizer   Company? @relation(fields: [organizerId], references: [id])
+  // Simple organizer info (no DB relationship)
+  organizerName String? // "Tech Startup", "Charleston Digital Corridor"
+  organizerWebsite String? // Their website if available
   
   // Metadata
-  isPublic    Boolean  @default(true)       // Should this be visible to all?
-  isFeatured  Boolean  @default(false)      // Highlight this event?
-  createdAt   DateTime @default(now())      // When added to database
-  updatedAt   DateTime @updatedAt           // Last updated
+  logoUrl String? // Event logo or image
+  createdAt DateTime @default(now()) // When added to database
+  updatedAt DateTime @updatedAt // Last updated
   
   // Data source tracking
-  sourceUrl   String?                       // Where we scraped this from
-  sourceType  String   @default("manual")   // "manual", "scraped", "api"
-
+  sourceUrl String? // Where we scraped this from
+  sourceType String @default("extracted") // "manual", "scraped", "api"
+  
   // Relationships
-  bookmarks   EventBookmark[]               // Users who bookmarked this event
-
+  bookmarks EventBookmark[] // Users who bookmarked this event
+  
   @@map("events")
 }
 
