@@ -46,7 +46,7 @@ export async function extractAndSyncEvents() {
       urlsToExtract.cybersc,
       urlsToExtract.allevents
     ], {
-        prompt: "Extract tech event information from these webpages. For industry: give me all the industries that this event belongs to in an array of strings (tech, ai, cyber, innovation, networking, etc). For startDate and endDate: convert to ISO date format. For isVirtual: true if online/virtual event, false if in-person. Extract organizer name and website if available. Use Charleston, SC as location defaults if not specified", 
+        prompt: "Extract tech event information from these webpages. Try your best to get the address information for the event. For industry: give me all the industries that this event belongs to in an array of strings (tech, ai, cyber, innovation, networking, etc). For startDate and endDate: convert to ISO date format. For isVirtual: true if online/virtual event, false if in-person. Extract organizer name and website if available. Use Charleston, SC as location defaults if not specified", 
         schema: schema,
     });
   } catch (error) {

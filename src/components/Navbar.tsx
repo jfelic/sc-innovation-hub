@@ -1,9 +1,15 @@
+"use client"
+
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { Calendar, Newspaper } from 'lucide-react'
+import { Calendar, Newspaper, User, LogOut } from 'lucide-react'
 import Image from 'next/image'
+import { useSession, signOut } from 'next-auth/react'
 
 export function Navbar() {
+  // Get session data and status
+  const { data: session, status } = useSession()
+
   return (
     <nav className="bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,20 +43,45 @@ export function Navbar() {
             </Button>
           </div>
 
-          {/* Right side - Enhanced Auth Links */}
+          {/* Right side - Auth Links with Session Management */}
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" asChild className="hover:bg-gray-100 text-black transition-colors">
-              <Link href="/auth/signin">Login</Link>
-            </Button>
-            <Button 
-              variant="default" 
-              size="sm" 
-              asChild 
-              className="text-white shadow-md hover:shadow-lg transition-all duration-300 hover:opacity-90"
-              style={{ backgroundColor: '#0B4168' }}
-            >
-              <Link href="/auth/register">Register</Link>
-            </Button>
+            {status === "loading" ? (
+              // Show loading state while checking session
+              <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
+            ) : session ? (
+              // User is logged in - show user info and logout
+              <>
+                <div className="flex items-center space-x-2 text-sm text-gray-700">
+                  <User className="h-4 w-4" />
+                  <span>Welcome, {session.user?.name || session.user?.email}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="hover:bg-red-50 text-black hover:text-red-600 transition-colors"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              // User is not logged in - show login/register buttons
+              <>
+                <Button variant="ghost" size="sm" asChild className="hover:bg-gray-100 text-black transition-colors">
+                  <Link href="/auth/signin">Login</Link>
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  asChild 
+                  className="text-white shadow-md hover:shadow-lg transition-all duration-300 hover:opacity-90"
+                  style={{ backgroundColor: '#0B4168' }}
+                >
+                  <Link href="/auth/register">Register</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

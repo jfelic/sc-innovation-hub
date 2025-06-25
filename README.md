@@ -184,11 +184,7 @@ The platform uses PostgreSQL with comprehensive models for users, companies, and
 
 ## 🤝 Contributing
 
-This project is part of a month-long hackathon addressing South Carolina's innovation ecosystem challenges. Contributions are welcome!
-
-## 📄 License
-
-This project is private and proprietary.
+This project is part of a hackathon addressing South Carolina's innovation ecosystem challenges.
 
 ## 🎯 Current Status
 

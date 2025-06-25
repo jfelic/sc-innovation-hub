@@ -3,6 +3,7 @@
 // Import NextAuth helpers, React hooks, icons, and Radix UI Toggle
 import { signIn, getProviders } from "next-auth/react"
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { Globe, Eye, EyeOff } from "lucide-react"
 import * as Toggle from "@radix-ui/react-toggle"
 
@@ -17,6 +18,9 @@ export default function SignInPage() {
   const [providers, setProviders] = useState<Record<string, Provider> | null>(null)
   // State to toggle password visibility
   const [showPassword, setShowPassword] = useState(false)
+  // Get URL search params to check for registration success
+  const searchParams = useSearchParams()
+  const registered = searchParams.get('registered')
 
   // Fetch authentication providers on mount
   useEffect(() => {
@@ -67,6 +71,14 @@ export default function SignInPage() {
             Connect with South Carolina's innovation ecosystem
           </p>
         </div>
+
+        {/* Registration success message */}
+        {registered && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+            <p className="text-sm font-medium">Registration successful!</p>
+            <p className="text-sm">Please sign in with your new account.</p>
+          </div>
+        )}
 
         <div className="mt-8 space-y-4">
           {/* Email/password sign-in form */}
