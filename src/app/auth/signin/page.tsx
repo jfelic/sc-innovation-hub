@@ -1,9 +1,10 @@
 "use client"
 
 // Import NextAuth helpers, React hooks, icons, and Radix UI Toggle
-import { signIn, getProviders } from "next-auth/react"
+import { signIn, signOut, getProviders, useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Globe, Eye, EyeOff } from "lucide-react"
 import * as Toggle from "@radix-ui/react-toggle"
 
@@ -21,6 +22,16 @@ export default function SignInPage() {
   // Get URL search params to check for registration success
   const searchParams = useSearchParams()
   const registered = searchParams.get('registered')
+  // Check current session status
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/")
+    }
+  }, [session, status, router])
 
   // Fetch authentication providers on mount
   useEffect(() => {
@@ -62,6 +73,20 @@ export default function SignInPage() {
     }
   }
 
+  // Show loading while checking session
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  // Don't render signin form if already authenticated (redirect will happen)
+  if (status === "authenticated") {
+    return null
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       {/* Card container */}
@@ -83,6 +108,17 @@ export default function SignInPage() {
             <p className="text-sm">Please sign in with your new account.</p>
           </div>
         )}
+
+        {/* Temporary SignOut Button for Testing */}
+        <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
+          <p className="text-sm text-yellow-800 mb-2">🔧 Testing: Force sign out of any existing session</p>
+          <button
+            onClick={() => signOut({ callbackUrl: '/auth/signin' })}
+            className="text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 transition"
+          >
+            Force Sign Out
+          </button>
+        </div>
 
         <div className="mt-8 space-y-4">
           {/* Email/password sign-in form */}

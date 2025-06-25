@@ -30,7 +30,7 @@ export function Hero() {
       }}
     >
       {/* Darker overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/70"></div>
+      {/* <div className="absolute inset-0 bg-black/40"></div> */}
       
       {/* Optional: Add a gradient overlay for even better text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80"></div>
