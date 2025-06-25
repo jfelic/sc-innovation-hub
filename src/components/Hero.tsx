@@ -1,9 +1,24 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
 export function Hero() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      router.push(`/?search=${encodeURIComponent(searchTerm.trim())}`);
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <section 
       className="relative py-24 overflow-hidden"
@@ -27,11 +42,13 @@ export function Hero() {
         <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto drop-shadow-lg shadow-black/60">
           Explore the thriving innovation ecosystem across South Carolina
         </p>
-        <form className="flex justify-center">
+        <form className="flex justify-center" onSubmit={handleSubmit}>
           <div className="flex w-full max-w-md shadow-2xl">
             <Input
               type="text"
               placeholder="Search companies, categories, or counties..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="rounded-r-none border-r-0 focus-visible:ring-2 focus-visible:ring-red-500 bg-white/98 backdrop-blur-sm border-white/20"
               style={{ '--tw-ring-color': '#0B4168' } as React.CSSProperties}
             />

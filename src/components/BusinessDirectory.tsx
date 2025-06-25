@@ -1,11 +1,15 @@
 import { prisma } from "@/lib/db";
 import { BusinessDirectoryClient } from "./BusinessDirectoryClient";
 
+interface BusinessDirectoryProps {
+  searchTerm?: string;
+}
+
 /**
  * Server component that fetches data and passes it to the client component.
  * This allows us to have server-side data fetching with client-side interactivity.
  */
-export async function BusinessDirectory() {
+export async function BusinessDirectory({ searchTerm }: BusinessDirectoryProps) {
   // Fetch all companies from the database, ordered alphabetically by name.
   const rawCompanies = await prisma.company.findMany({
     orderBy: {
@@ -38,6 +42,7 @@ export async function BusinessDirectory() {
       companies={companies}
       industries={industries}
       cities={cities}
+      searchTerm={searchTerm}
     />
   );
 }
