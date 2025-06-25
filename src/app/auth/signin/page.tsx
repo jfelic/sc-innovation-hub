@@ -1,7 +1,7 @@
 "use client"
 
 // Import NextAuth helpers, React hooks, icons, and Radix UI Toggle
-import { signIn, signOut, getProviders, useSession } from "next-auth/react"
+import { signIn, getProviders, useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
@@ -109,16 +109,6 @@ export default function SignInPage() {
           </div>
         )}
 
-        {/* Temporary SignOut Button for Testing */}
-        <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
-          <p className="text-sm text-yellow-800 mb-2">🔧 Testing: Force sign out of any existing session</p>
-          <button
-            onClick={() => signOut({ callbackUrl: '/auth/signin' })}
-            className="text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 transition"
-          >
-            Force Sign Out
-          </button>
-        </div>
 
         <div className="mt-8 space-y-4">
           {/* Email/password sign-in form */}

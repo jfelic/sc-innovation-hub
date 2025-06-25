@@ -16,8 +16,12 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   // State for loading indicator
   const [loading, setLoading] = useState(false)
+  // State to track error shake animation
+  const [errorShake, setErrorShake] = useState(false)
   // State to toggle password visibility
   const [showPassword, setShowPassword] = useState(false)
+  // State to toggle confirm password visibility
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   // Handles form submission for registration
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -29,8 +33,19 @@ export default function RegisterPage() {
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
     const password = formData.get("password") as string
+    const confirmPassword = formData.get("confirmPassword") as string
     const firstName = formData.get("firstName") as string
     const lastName = formData.get("lastName") as string
+
+    // Validate password confirmation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      // Trigger shake animation to show error is fresh
+      setErrorShake(true)
+      setTimeout(() => setErrorShake(false), 500)
+      setLoading(false)
+      return
+    }
 
     try {
       // Send registration data to the API route
@@ -86,7 +101,9 @@ export default function RegisterPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {/* Error message display */}
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
+            <div className={`bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded transition-transform duration-200 ${
+              errorShake ? 'animate-pulse scale-105' : ''
+            }`}>
               {error}
             </div>
           )}
@@ -155,6 +172,33 @@ export default function RegisterPage() {
                 tabIndex={0}
               >
                 {showPassword ? (
+                  <EyeOff className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <Eye className="w-5 h-5 text-muted-foreground" />
+                )}
+              </Toggle.Root>
+            </div>
+            {/* Confirm Password field with icon and visibility toggle */}
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                className="appearance-none rounded-md relative block w-full px-3 py-2 pl-10 pr-10 border border-input placeholder-muted-foreground text-foreground focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm bg-background"
+                placeholder="Confirm Password"
+              />
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              {/* Radix UI Toggle for confirm password visibility */}
+              <Toggle.Root
+                pressed={showConfirmPassword}
+                onPressedChange={setShowConfirmPassword}
+                className="absolute inset-y-0 right-0 flex items-center px-3 focus:outline-none"
+                aria-label="Toggle confirm password visibility"
+                tabIndex={0}
+              >
+                {showConfirmPassword ? (
                   <EyeOff className="w-5 h-5 text-muted-foreground" />
                 ) : (
                   <Eye className="w-5 h-5 text-muted-foreground" />
