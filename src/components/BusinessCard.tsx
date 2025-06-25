@@ -45,12 +45,23 @@ export function BusinessCard({ company }: BusinessCardProps) {
             {company.description && <p className="text-sm">{company.description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2 md:flex-row mt-4">
-            <Button 
-          style={{ backgroundColor: '#0B4168' }} 
-          className="hover:bg-blue-800 hover:scale-105 transition-all duration-200"
-            >
-          More info
-            </Button>
+            {company.website ? (
+              <Button 
+                style={{ backgroundColor: '#0B4168' }} 
+                className="hover:bg-blue-800 hover:scale-105 transition-all duration-200"
+                onClick={() => window.open(company.website!, '_blank')}
+              >
+                More Info
+              </Button>
+            ) : (
+              <Button 
+                style={{ backgroundColor: '#6B7280' }} 
+                className="cursor-not-allowed opacity-50"
+                disabled
+              >
+                No Website
+              </Button>
+            )}
         </div>
       </CardContent>
     </Card>
