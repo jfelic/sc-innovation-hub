@@ -30,20 +30,29 @@ interface BusinessDirectoryClientProps {
   companies: Company[];
   industries: string[];
   cities: string[];
+  searchTerm?: string;
 }
 
-export function BusinessDirectoryClient({ companies, industries, cities }: BusinessDirectoryClientProps) {
+export function BusinessDirectoryClient({ companies, industries, cities, searchTerm = "" }: BusinessDirectoryClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const itemsPerPage = 20;
 
-  // Filter companies based on selected filters
+  // Filter companies based on selected filters and search term
   const filteredCompanies = companies.filter(company => {
     const industryMatch = selectedIndustries.length === 0 || 
       company.industry.some(ind => selectedIndustries.includes(ind));
     const cityMatch = selectedCity === "all" || company.city === selectedCity;
-    return industryMatch && cityMatch;
+    
+    // Search functionality - search across name, description, industry, and city
+    const searchMatch = !searchTerm || 
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (company.description && company.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      company.industry.some(ind => ind.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      company.city.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return industryMatch && cityMatch && searchMatch;
   });
 
   // Calculate pagination values based on filtered results
