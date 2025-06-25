@@ -1,8 +1,9 @@
 "use client"
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
-import { Calendar, Newspaper, User, LogOut, ChevronDown, Settings } from 'lucide-react'
+import { Calendar, Newspaper, User, LogOut, ChevronDown, Settings, Building } from 'lucide-react'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
 import {
@@ -16,6 +17,8 @@ import {
 export function Navbar() {
   // Get session data and status
   const { data: session, status } = useSession()
+  // Get current pathname to highlight active nav item
+  const pathname = usePathname()
 
   return (
     <nav className="bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-100 sticky top-0 z-50">
@@ -36,13 +39,46 @@ export function Navbar() {
 
           {/* Center - Enhanced Navigation Links */}
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" asChild className="hover:bg-red-50 text-black hover:text-red-600 transition-colors">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              asChild 
+              className={`transition-colors flex items-center space-x-1 ${
+                pathname === '/' 
+                  ? 'bg-red-100 text-red-700 hover:bg-red-100' 
+                  : 'hover:bg-red-50 text-black hover:text-red-600'
+              }`}
+            >
+              <Link href="/" className="flex items-center space-x-1">
+                <Building className="h-4 w-4" />
+                <span>Directory</span>
+              </Link>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              asChild 
+              className={`transition-colors flex items-center space-x-1 ${
+                pathname === '/events' 
+                  ? 'bg-red-100 text-red-700 hover:bg-red-100' 
+                  : 'hover:bg-red-50 text-black hover:text-red-600'
+              }`}
+            >
               <Link href="/events" className="flex items-center space-x-1">
                 <Calendar className="h-4 w-4" />
                 <span>Events</span>
               </Link>
             </Button>
-            <Button variant="ghost" size="sm" asChild className="hover:bg-red-50 text-black hover:text-red-600 transition-colors">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              asChild 
+              className={`transition-colors flex items-center space-x-1 ${
+                pathname === '/news' 
+                  ? 'bg-red-100 text-red-700 hover:bg-red-100' 
+                  : 'hover:bg-red-50 text-black hover:text-red-600'
+              }`}
+            >
               <Link href="/news" className="flex items-center space-x-1">
                 <Newspaper className="h-4 w-4" />
                 <span>News</span>
