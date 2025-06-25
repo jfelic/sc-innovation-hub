@@ -3,11 +3,13 @@ import { Hero } from "@/components/Hero";
 import { Navbar } from "@/components/Navbar";
 
 interface HomeProps {
-  searchParams: { search?: string };
+  searchParams: Promise<{ search?: string }>;
 }
 
-export default function Home({ searchParams }: HomeProps) {
-  const searchTerm = searchParams.search || "";
+export default async function Home({ searchParams }: HomeProps) {
+  // Await searchParams as required in Next.js 15+
+  const params = await searchParams;
+  const searchTerm = params.search || "";
 
   return (
     <div className="min-h-screen">
