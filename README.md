@@ -4,21 +4,43 @@ A digital platform that connects South Carolina's tech, AI, cyber, and innovatio
 
 ## 🌟 Features
 
-### Core MVP Features
-- **Business Directory**: Searchable database of innovation-driven companies across SC
-- **Event Discovery**: Centralized calendar with conflict detection and categorization
-- **Content Aggregation**: AI-powered scraping of SC tech news and updates
-- **User Authentication**: Secure login with Google OAuth and email providers
-- **Regional Filtering**: Toggle between Mount Pleasant, statewide, and regional views
-- **Bookmarking System**: Save companies and events for easy access
+### ✅ Currently Implemented
+- **Business Directory**: Fully functional searchable database with 20+ SC innovation companies
+  - Advanced search across company names, descriptions, industries, and locations
+  - Industry-based filtering (multi-select checkboxes)
+  - City-based filtering with Charleston area focus
+  - Responsive card layout with expandable descriptions
+  - Pagination (20 companies per page)
+  - Direct links to company websites
+  
+- **User Authentication**: Complete auth system with NextAuth.js
+  - Google OAuth integration
+  - Email/password registration and login
+  - Secure password hashing with bcryptjs
+  - Custom registration and signin pages
+  
+- **Automated Data Extraction**: Production-ready scraping system
+  - Company data from builtin.com, goodfirms.co, and biopharmguy.com
+  - Event data from Meetup, CyberSC, and AllEvents
+  - Firecrawl API integration with structured data extraction
+  - Zod schema validation for data quality
+  - Source tracking for data provenance
 
-### Technical Features
+### 🚧 Planned Features
+- **Event Discovery**: Backend models ready, frontend implementation pending
+- **User Bookmarking**: Database schema complete, UI components needed
+- **Regional Filtering**: Mount Pleasant vs statewide toggle
+- **News Aggregation**: Content scraping infrastructure in place
+
+### Technical Stack
 - **Next.js 15** with App Router and TypeScript
-- **PostgreSQL** database with Prisma ORM
-- **NextAuth.js** for authentication
-- **Radix UI** components for accessibility
+- **PostgreSQL** database with Prisma ORM (7 migrations)
+- **NextAuth.js** for authentication with session management
+- **shadcn/ui** + Radix UI components for accessibility
 - **Tailwind CSS** for responsive design
-- **Automated Content Scraping** via Firecrawl API
+- **Lucide React** for icons
+- **Firecrawl API** for automated content scraping
+- **Zod** for runtime type validation
 
 ## 🚀 Getting Started
 
@@ -52,6 +74,7 @@ A digital platform that connects South Carolina's tech, AI, cyber, and innovatio
    NEXTAUTH_SECRET="your-generated-secret"
    GOOGLE_CLIENT_ID="your-google-oauth-client-id"
    GOOGLE_CLIENT_SECRET="your-google-oauth-client-secret"
+   FIRECRAWL_API_KEY="your-firecrawl-api-key"
    ```
 
 4. **Set up the database**
@@ -73,29 +96,69 @@ A digital platform that connects South Carolina's tech, AI, cyber, and innovatio
 ```
 sc-innovation-hub/
 ├── src/
-│   ├── app/                 # Next.js App Router pages
-│   │   ├── auth/           # Authentication pages
-│   │   ├── api/            # API routes
-│   │   └── layout.tsx      # Root layout
-│   ├── lib/                # Utility functions and configurations
-│   │   ├── auth.ts         # NextAuth configuration
-│   │   └── db.ts           # Database connection
-│   ├── types/              # TypeScript type definitions
-│   └── generated/          # Prisma generated client
+│   ├── app/                       # Next.js App Router
+│   │   ├── api/
+│   │   │   ├── auth/[...nextauth]/   # NextAuth.js API routes
+│   │   │   ├── extract/             # Data extraction endpoints
+│   │   │   │   ├── companies/       # Company scraping API
+│   │   │   │   └── events/          # Event scraping API
+│   │   │   └── scrape/companies/    # Legacy scraping endpoint
+│   │   ├── auth/
+│   │   │   ├── register/            # User registration page
+│   │   │   └── signin/              # User login page
+│   │   ├── layout.tsx               # Root application layout
+│   │   ├── page.tsx                 # Homepage with business directory
+│   │   └── providers.tsx            # Session provider wrapper
+│   ├── components/
+│   │   ├── BusinessCard.tsx         # Individual company card component
+│   │   ├── BusinessDirectory.tsx    # Server component for data fetching
+│   │   ├── BusinessDirectoryClient.tsx # Client component with filters/search
+│   │   ├── Hero.tsx                 # Homepage hero section with search
+│   │   ├── Navbar.tsx              # Main navigation
+│   │   └── ui/                     # shadcn/ui components
+│   ├── lib/
+│   │   ├── auth.ts                 # NextAuth configuration
+│   │   ├── db.ts                   # Prisma client instance
+│   │   ├── firecrawl_extract.ts    # Company data extraction logic
+│   │   ├── firecrawl_extract_events.ts # Event data extraction logic
+│   │   └── utils.ts                # Utility functions
+│   ├── types/
+│   │   └── next-auth.d.ts          # NextAuth type extensions
+│   └── generated/
+│       └── prisma/                 # Prisma generated client
 ├── prisma/
-│   ├── schema.prisma       # Database schema
-│   └── migrations/         # Database migrations
-└── public/                 # Static assets
+│   ├── schema.prisma              # Database schema (7 migrations)
+│   └── migrations/                # Database migration history
+└── public/                        # Static assets (logo, hero image)
 ```
 
 ## 🗄️ Database Schema
 
-The platform uses PostgreSQL with the following main entities:
+The platform uses PostgreSQL with comprehensive models for users, companies, and events:
 
-- **Users**: Authentication and user profiles
-- **Companies**: Innovation businesses with location and industry data
-- **Events**: Tech events with scheduling and categorization
-- **Bookmarks**: User-saved companies and events
+### Authentication Models (NextAuth.js)
+- **User**: Core user accounts with email, password, firstName, lastName
+- **Account**: OAuth account information (Google, etc.)
+- **Session**: User login sessions with expiration tracking
+- **VerificationToken**: Email verification and password reset tokens
+
+### Business Models
+- **Company**: Innovation businesses with:
+  - Basic info (name, description, website, industry array)
+  - Location data (address, city, state with SC defaults)
+  - Metadata (size, founded year, logo URL)
+  - Source tracking (sourceUrl, sourceType for data provenance)
+  - Unique constraint on company name
+
+- **Event**: Tech events with:
+  - Event details (title, description, start/end dates)
+  - Location info (venue, address, city, state, virtual flag)
+  - Categorization (industry array, organizer info)
+  - Source tracking for scraped data
+
+### User Features
+- **EventBookmark**: User-saved events for later reference
+- **CompanyBookmark**: User-saved companies for tracking
 
 ## 🔧 Development
 
@@ -109,6 +172,15 @@ The platform uses PostgreSQL with the following main entities:
 - `npx prisma studio` - Open database GUI
 - `npx prisma migrate dev` - Apply migrations
 - `npx prisma generate` - Generate Prisma client
+- `npx prisma db push` - Push schema changes to database
+
+### Data Extraction
+- `/api/extract/companies` - Scrape company data from configured sources
+- `/api/extract/events` - Scrape event data from configured sources
+
+### Current Data Sources
+- **Companies**: builtin.com, goodfirms.co, biopharmguy.com
+- **Events**: Meetup, CyberSC, AllEvents
 
 ## 🤝 Contributing
 
@@ -118,21 +190,32 @@ This project is part of a month-long hackathon addressing South Carolina's innov
 
 This project is private and proprietary.
 
+## 🎯 Current Status
+
+**MVP Status**: ✅ **Functional Business Directory**
+- 20+ South Carolina innovation companies catalogued
+- Full-text search and filtering capabilities
+- Responsive design optimized for all devices
+- Automated data extraction from multiple sources
+- User authentication system ready for expansion
+
+**Next Priorities**:
+1. Event directory frontend implementation
+2. User bookmarking interface
+3. Regional filtering (Mount Pleasant focus)
+4. News aggregation display
+
 ---
 
 Built with ❤️ for South Carolina's innovation community
 
-## Learn More
+## 🚀 Deployment
 
-To learn more about Next.js, take a look at the following resources:
+The application is built with Vercel deployment in mind:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build    # Verify production build
+vercel           # Deploy to Vercel
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ensure environment variables are configured in your deployment platform.
