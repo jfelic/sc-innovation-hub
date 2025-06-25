@@ -2,9 +2,16 @@
 
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
-import { Calendar, Newspaper, User, LogOut } from 'lucide-react'
+import { Calendar, Newspaper, User, LogOut, ChevronDown, Settings } from 'lucide-react'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Navbar() {
   // Get session data and status
@@ -49,22 +56,36 @@ export function Navbar() {
               // Show loading state while checking session
               <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
             ) : session ? (
-              // User is logged in - show user info and logout
-              <>
-                <div className="flex items-center space-x-2 text-sm text-gray-700">
-                  <User className="h-4 w-4" />
-                  <span>Welcome, {session.user?.name || session.user?.email}</span>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => signOut({ callbackUrl: '/' })}
-                  className="hover:bg-red-50 text-black hover:text-red-600 transition-colors"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
-                </Button>
-              </>
+              // User is logged in - show dropdown menu
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="hover:bg-gray-50 text-black transition-colors flex items-center space-x-2"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{session.user?.name || session.user?.email}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link href="/account-dashboard" className="flex items-center">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Account Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="text-red-600 focus:text-red-600"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               // User is not logged in - show login/register buttons
               <>
