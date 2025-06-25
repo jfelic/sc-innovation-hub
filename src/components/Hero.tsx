@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,13 @@ import { Search } from "lucide-react";
 export function Hero() {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
+
+  // Navigate immediately when search term is cleared
+  useEffect(() => {
+    if (searchTerm === "") {
+      router.push('/');
+    }
+  }, [searchTerm, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +55,14 @@ export function Hero() {
               type="text"
               placeholder="Search companies, categories, or counties..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchTerm(value);
+                // If input is cleared, immediately navigate to reset results
+                if (value === "") {
+                  router.push('/');
+                }
+              }}
               className="rounded-r-none border-r-0 focus-visible:ring-2 focus-visible:ring-red-500 bg-white/98 backdrop-blur-sm border-white/20"
               style={{ '--tw-ring-color': '#0B4168' } as React.CSSProperties}
             />

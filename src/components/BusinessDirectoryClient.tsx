@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BusinessCard } from "./BusinessCard";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,6 +38,15 @@ export function BusinessDirectoryClient({ companies, industries, cities, searchT
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const itemsPerPage = 20;
+
+  // Reset filters when search term is cleared
+  useEffect(() => {
+    if (!searchTerm) {
+      setSelectedIndustries([]);
+      setSelectedCity("all");
+      setCurrentPage(1);
+    }
+  }, [searchTerm]);
 
   // Filter companies based on selected filters and search term
   const filteredCompanies = companies.filter(company => {
