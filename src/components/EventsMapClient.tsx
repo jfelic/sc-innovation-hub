@@ -54,26 +54,87 @@ const createEventIcon = (isVirtual: boolean, industry: string[]) => {
 // Default coordinates for Charleston, SC
 const CHARLESTON_COORDS: [number, number] = [32.7765, -79.9311];
 
-// Geocoding function using OpenStreetMap Nominatim API (free)
+// Cache for geocoded addresses
+const geocodeCache = new Map<string, [number, number] | null>();
+
+// Load cache from localStorage on initialization
+const loadCacheFromStorage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = localStorage.getItem('geocode-cache');
+      if (cached) {
+        const data = JSON.parse(cached);
+        Object.entries(data).forEach(([key, value]) => {
+          geocodeCache.set(key, value as [number, number] | null);
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load geocode cache:', error);
+    }
+  }
+};
+
+// Save cache to localStorage
+const saveCacheToStorage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const cacheObject = Object.fromEntries(geocodeCache);
+      localStorage.setItem('geocode-cache', JSON.stringify(cacheObject));
+    } catch (error) {
+      console.error('Failed to save geocode cache:', error);
+    }
+  }
+};
+
+// Initialize cache on first load
+if (typeof window !== 'undefined') {
+  loadCacheFromStorage();
+}
+
+// Geocoding function with caching
 const geocodeAddress = async (address: string, city: string, state: string): Promise<[number, number] | null> => {
+  const fullAddress = `${address}, ${city}, ${state}`;
+  const cacheKey = fullAddress.toLowerCase().trim();
+  
+  // Check cache first
+  if (geocodeCache.has(cacheKey)) {
+    return geocodeCache.get(cacheKey) || null;
+  }
+  
   try {
-    const fullAddress = `${address}, ${city}, ${state}`;
     const encodedAddress = encodeURIComponent(fullAddress);
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&countrycodes=us`
     );
     
-    if (!response.ok) return null;
+    if (!response.ok) {
+      geocodeCache.set(cacheKey, null);
+      saveCacheToStorage();
+      return null;
+    }
     
     const data = await response.json();
     if (data && data.length > 0) {
       const lat = parseFloat(data[0].lat);
       const lon = parseFloat(data[0].lon);
-      return [lat, lon];
+      const coordinates: [number, number] = [lat, lon];
+      
+      // Cache the result
+      geocodeCache.set(cacheKey, coordinates);
+      saveCacheToStorage();
+      
+      return coordinates;
+    } else {
+      // Cache negative result to avoid future requests
+      geocodeCache.set(cacheKey, null);
+      saveCacheToStorage();
+      return null;
     }
-    return null;
   } catch (error) {
     console.error('Geocoding error:', error);
+    // Cache error result to avoid retrying
+    geocodeCache.set(cacheKey, null);
+    saveCacheToStorage();
     return null;
   }
 };
@@ -96,16 +157,41 @@ export default function EventsMapClient({ events }: EventsMapClientProps) {
       );
 
       const geocodedEvents: EventWithCoordinates[] = [];
+      const uncachedEvents: Event[] = [];
 
+      // First pass: check cache for existing coordinates
       for (const event of physicalEvents) {
-        // Add a small delay to respect rate limits
+        const fullAddress = `${event.address}, ${event.city}, ${event.state}`;
+        const cacheKey = fullAddress.toLowerCase().trim();
+        
+        if (geocodeCache.has(cacheKey)) {
+          const coordinates = geocodeCache.get(cacheKey);
+          geocodedEvents.push({
+            ...event,
+            coordinates: coordinates || undefined
+          });
+        } else {
+          uncachedEvents.push(event);
+        }
+      }
+
+      // If we have all coordinates from cache, set immediately
+      if (uncachedEvents.length === 0) {
+        setEventsWithCoordinates(geocodedEvents.filter(event => event.coordinates));
+        setIsLoading(false);
+        return;
+      }
+
+      // Second pass: geocode uncached events with rate limiting
+      for (const event of uncachedEvents) {
+        // Add a small delay to respect rate limits (only for actual API calls)
         await new Promise(resolve => setTimeout(resolve, 100));
         
         const coordinates = await geocodeAddress(event.address!, event.city, event.state);
         
         geocodedEvents.push({
           ...event,
-          coordinates
+          coordinates: coordinates || undefined
         });
       }
 
