@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Leaflet CSS imports */
+@import 'leaflet/dist/leaflet.css';
+
 /* Shadcn/ui color system - CSS variables for theming */
 @layer base {
   /* Light mode colors */

@@ -1,0 +1,243 @@
+"use client"
+
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Icon } from 'leaflet';
+import { format } from 'date-fns';
+import { MapPin, Calendar, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+interface Event {
+  id: string;
+  title: string;
+  description: string | null;
+  startDate: Date;
+  endDate: Date | null;
+  venue: string | null;
+  address: string | null;
+  city: string;
+  state: string;
+  isVirtual: boolean;
+  eventUrl: string | null;
+  industry: string[];
+  organizerName: string | null;
+  logoUrl: string | null;
+}
+
+interface EventsMapClientProps {
+  events: Event[];
+}
+
+interface EventWithCoordinates extends Event {
+  coordinates?: [number, number];
+}
+
+// Create custom icons for different event types
+const createEventIcon = (isVirtual: boolean, industry: string[]) => {
+  const iconColor = isVirtual ? '#10b981' : // Green for virtual
+                   industry.includes('tech') ? '#3b82f6' : // Blue for tech
+                   industry.includes('cyber') ? '#ef4444' : // Red for cyber
+                   industry.includes('ai') ? '#8b5cf6' : // Purple for AI
+                   '#6b7280'; // Gray for others
+
+  return new Icon({
+    iconUrl: `data:image/svg+xml;base64,${btoa(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${iconColor}" width="24" height="24">
+        <path d="M12 2c-3.866 0-7 3.134-7 7 0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+    `)}`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24]
+  });
+};
+
+// Default coordinates for Charleston, SC
+const CHARLESTON_COORDS: [number, number] = [32.7765, -79.9311];
+
+// Geocoding function using OpenStreetMap Nominatim API (free)
+const geocodeAddress = async (address: string, city: string, state: string): Promise<[number, number] | null> => {
+  try {
+    const fullAddress = `${address}, ${city}, ${state}`;
+    const encodedAddress = encodeURIComponent(fullAddress);
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&countrycodes=us`
+    );
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      return [lat, lon];
+    }
+    return null;
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    return null;
+  }
+};
+
+export default function EventsMapClient({ events }: EventsMapClientProps) {
+  const [eventsWithCoordinates, setEventsWithCoordinates] = useState<EventWithCoordinates[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const geocodeEvents = async () => {
+      setIsLoading(true);
+      
+      // Filter events that have physical addresses
+      const physicalEvents = events.filter(event => 
+        !event.isVirtual && 
+        event.venue !== 'Online' && 
+        event.address && 
+        event.city && 
+        event.state
+      );
+
+      const geocodedEvents: EventWithCoordinates[] = [];
+
+      for (const event of physicalEvents) {
+        // Add a small delay to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const coordinates = await geocodeAddress(event.address!, event.city, event.state);
+        
+        geocodedEvents.push({
+          ...event,
+          coordinates
+        });
+      }
+
+      setEventsWithCoordinates(geocodedEvents.filter(event => event.coordinates));
+      setIsLoading(false);
+    };
+
+    geocodeEvents();
+  }, [events]);
+
+  if (isLoading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="text-gray-600 mt-2">Loading event locations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full w-full">
+      <MapContainer
+        center={CHARLESTON_COORDS}
+        zoom={10}
+        className="h-full w-full"
+        zoomControl={true}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        
+        {eventsWithCoordinates.map((event) => {
+          if (!event.coordinates) return null;
+
+          return (
+            <Marker
+              key={event.id}
+              position={event.coordinates}
+              icon={createEventIcon(event.isVirtual, event.industry)}
+            >
+              <Popup className="custom-popup" maxWidth={300}>
+                <div className="p-2">
+                  {/* Event Title and Logo */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 text-base leading-tight">
+                        {event.title}
+                      </h3>
+                      {event.organizerName && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          by {event.organizerName}
+                        </p>
+                      )}
+                    </div>
+                    {event.logoUrl && (
+                      <img 
+                        src={event.logoUrl} 
+                        alt={event.title}
+                        className="w-12 h-12 rounded object-cover ml-3 flex-shrink-0"
+                      />
+                    )}
+                  </div>
+
+                  {/* Date and Time */}
+                  <div className="flex items-center text-sm text-gray-600 mb-2">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    <span>
+                      {format(new Date(event.startDate), "MMM d, yyyy 'at' h:mm a")}
+                    </span>
+                  </div>
+
+                  {/* Location */}
+                  <div className="flex items-start text-sm text-gray-600 mb-3">
+                    <MapPin className="h-4 w-4 mr-2 mt-0.5" />
+                    <div>
+                      {event.venue && <div className="font-medium">{event.venue}</div>}
+                      <div>{event.address}</div>
+                      <div>{event.city}, {event.state}</div>
+                    </div>
+                  </div>
+
+                  {/* Industries */}
+                  {event.industry.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {event.industry.slice(0, 3).map((industry) => (
+                        <span
+                          key={industry}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        >
+                          {industry}
+                        </span>
+                      ))}
+                      {event.industry.length > 3 && (
+                        <span className="text-xs text-gray-500">
+                          +{event.industry.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Description (truncated) */}
+                  {event.description && (
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                      {event.description.length > 150 
+                        ? `${event.description.substring(0, 150)}...`
+                        : event.description
+                      }
+                    </p>
+                  )}
+
+                  {/* Event URL */}
+                  {event.eventUrl && (
+                    <a
+                      href={event.eventUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      View Event Details
+                    </a>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+      </MapContainer>
+    </div>
+  );
+}
