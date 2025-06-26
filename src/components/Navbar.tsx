@@ -21,7 +21,7 @@ export function Navbar() {
   const pathname = usePathname()
 
   return (
-    <nav className="bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-100 sticky top-0 z-50">
+    <nav className="bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-100 sticky top-0 z-[9999]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           {/* Left side - Enhanced Logo */}
@@ -105,7 +105,7 @@ export function Navbar() {
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 z-[10000]">
                   <DropdownMenuItem asChild>
                     <Link href="/account-dashboard" className="flex items-center">
                       <Settings className="h-4 w-4 mr-2" />

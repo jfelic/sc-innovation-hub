@@ -21,6 +21,7 @@ interface Event {
 
 interface EventsMapProps {
   events: Event[];
+  selectedEventId?: string | null;
 }
 
 // Dynamically import the Map component to avoid SSR issues with Leaflet
@@ -37,6 +38,6 @@ const DynamicMapClient = dynamic(() => import('./EventsMapClient'), {
   )
 });
 
-export function EventsMap({ events }: EventsMapProps) {
-  return <DynamicMapClient events={events} />;
+export function EventsMap({ events, selectedEventId }: EventsMapProps) {
+  return <DynamicMapClient events={events} selectedEventId={selectedEventId} />;
 }

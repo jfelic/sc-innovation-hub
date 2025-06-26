@@ -23,9 +23,11 @@ interface Event {
 
 interface EventsListProps {
   events: Event[];
+  selectedEventId?: string | null;
+  onEventSelect?: (eventId: string) => void;
 }
 
-export function EventsList({ events }: EventsListProps) {
+export function EventsList({ events, selectedEventId, onEventSelect }: EventsListProps) {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -43,8 +45,22 @@ export function EventsList({ events }: EventsListProps) {
             <p className="mt-1 text-sm text-gray-500">No events found in the database.</p>
           </div>
         ) : (
-          events.map((event) => (
-            <Card key={event.id} className="hover:shadow-md transition-shadow cursor-pointer">
+          events.map((event) => {
+            const isSelected = selectedEventId === event.id;
+            const isPhysicalEvent = !event.isVirtual && event.venue !== 'Online' && event.address;
+            
+            return (
+              <Card 
+                key={event.id} 
+                className={`transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'ring-2 ring-blue-500 shadow-lg bg-blue-50' 
+                    : 'hover:shadow-md'
+                } ${
+                  isPhysicalEvent ? 'hover:ring-1 hover:ring-blue-300' : ''
+                }`}
+                onClick={() => isPhysicalEvent && onEventSelect?.(event.id)}
+              >
               <CardContent className="p-4">
                 {/* Event Title and Logo */}
                 <div className="flex items-start justify-between mb-3">
@@ -139,7 +155,8 @@ export function EventsList({ events }: EventsListProps) {
                 )}
               </CardContent>
             </Card>
-          ))
+            );
+          })
         )}
       </div>
     </div>

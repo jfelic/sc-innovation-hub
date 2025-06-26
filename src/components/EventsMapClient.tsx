@@ -1,6 +1,6 @@
 "use client"
 
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import { format } from 'date-fns';
 import { MapPin, Calendar, ExternalLink } from 'lucide-react';
@@ -25,6 +25,7 @@ interface Event {
 
 interface EventsMapClientProps {
   events: Event[];
+  selectedEventId?: string | null;
 }
 
 interface EventWithCoordinates extends Event {
@@ -32,27 +33,53 @@ interface EventWithCoordinates extends Event {
 }
 
 // Create custom icons for different event types
-const createEventIcon = (isVirtual: boolean, industry: string[]) => {
+const createEventIcon = (isVirtual: boolean, industry: string[], isSelected: boolean = false) => {
   const iconColor = isVirtual ? '#10b981' : // Green for virtual
                    industry.includes('tech') ? '#3b82f6' : // Blue for tech
                    industry.includes('cyber') ? '#ef4444' : // Red for cyber
                    industry.includes('ai') ? '#8b5cf6' : // Purple for AI
                    '#6b7280'; // Gray for others
 
+  const size = isSelected ? 32 : 24;
+  const strokeColor = isSelected ? '#fff' : 'none';
+  const strokeWidth = isSelected ? 2 : 0;
+
   return new Icon({
     iconUrl: `data:image/svg+xml;base64,${btoa(`
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${iconColor}" width="24" height="24">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${iconColor}" width="${size}" height="${size}" stroke="${strokeColor}" stroke-width="${strokeWidth}">
         <path d="M12 2c-3.866 0-7 3.134-7 7 0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
       </svg>
     `)}`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 24],
-    popupAnchor: [0, -24]
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, -size]
   });
 };
 
 // Default coordinates for Charleston, SC
 const CHARLESTON_COORDS: [number, number] = [32.7765, -79.9311];
+
+// Component to handle map navigation when event is selected
+function MapController({ selectedEventId, eventsWithCoordinates }: { 
+  selectedEventId: string | null | undefined;
+  eventsWithCoordinates: EventWithCoordinates[];
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (selectedEventId) {
+      const selectedEvent = eventsWithCoordinates.find(event => event.id === selectedEventId);
+      if (selectedEvent && selectedEvent.coordinates) {
+        // Fly to the selected event's location
+        map.flyTo(selectedEvent.coordinates, 15, {
+          duration: 1.5
+        });
+      }
+    }
+  }, [selectedEventId, eventsWithCoordinates, map]);
+
+  return null;
+}
 
 // Cache for geocoded addresses
 const geocodeCache = new Map<string, [number, number] | null>();
@@ -139,7 +166,7 @@ const geocodeAddress = async (address: string, city: string, state: string): Pro
   }
 };
 
-export default function EventsMapClient({ events }: EventsMapClientProps) {
+export default function EventsMapClient({ events, selectedEventId }: EventsMapClientProps) {
   const [eventsWithCoordinates, setEventsWithCoordinates] = useState<EventWithCoordinates[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -214,11 +241,11 @@ export default function EventsMapClient({ events }: EventsMapClientProps) {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full relative">
       <MapContainer
         center={CHARLESTON_COORDS}
         zoom={10}
-        className="h-full w-full"
+        className="h-full w-full relative z-0"
         zoomControl={true}
         scrollWheelZoom={true}
       >
@@ -227,14 +254,18 @@ export default function EventsMapClient({ events }: EventsMapClientProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
+        <MapController selectedEventId={selectedEventId} eventsWithCoordinates={eventsWithCoordinates} />
+        
         {eventsWithCoordinates.map((event) => {
           if (!event.coordinates) return null;
+          
+          const isSelected = selectedEventId === event.id;
 
           return (
             <Marker
               key={event.id}
               position={event.coordinates}
-              icon={createEventIcon(event.isVirtual, event.industry)}
+              icon={createEventIcon(event.isVirtual, event.industry, isSelected)}
             >
               <Popup className="custom-popup" maxWidth={300}>
                 <div className="p-2">
