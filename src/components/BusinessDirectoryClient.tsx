@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Filter, X } from "lucide-react";
 
 interface Company {
   id: string;
@@ -37,6 +38,7 @@ export function BusinessDirectoryClient({ companies, industries, cities, searchT
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string>("all");
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const itemsPerPage = 20;
 
   // Reset filters when search term is cleared
@@ -103,106 +105,204 @@ export function BusinessDirectoryClient({ companies, industries, cities, searchT
   };
 
   return (
-    // Main container for the directory layout
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex gap-8">
-      {/* Sidebar for filtering options */}
-      <aside className="w-1/3 max-w-xs space-y-6">
-        {/* Industry Filter Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Industry</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {/* Map over the unique industries to create checkboxes */}
-              {industries.map(industry => (
-                <div key={industry} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={`industry-${industry}`}
-                    checked={selectedIndustries.includes(industry)}
-                    onCheckedChange={(checked) => handleIndustryChange(industry, checked as boolean)}
-                  />
-                  <Label 
-                    htmlFor={`industry-${industry}`} 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {industry}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* City Filter Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">City</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Select value={selectedCity} onValueChange={handleCityChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="All Cities" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Cities</SelectItem>
-                {/* Map over the unique cities to create options */}
-                {cities.map(city => (
-                  <SelectItem key={city} value={city}>
-                    {city}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </CardContent>
-        </Card>
-      </aside>
-
-      {/* Main section for displaying business cards in a grid */}
-      <section className="flex-1">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Map over the current page companies to render a BusinessCard for each one */}
-          {currentCompanies.map(company => (
-            <BusinessCard key={company.id} company={company} />
-          ))}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+      {/* Mobile Filters Button & Results Count */}
+      <div className="flex items-center justify-between mb-6 lg:hidden">
+        <div className="text-sm text-gray-600">
+          {filteredCompanies.length} companies found
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsMobileFiltersOpen(true)}
+          className="flex items-center space-x-2"
+        >
+          <Filter className="h-4 w-4" />
+          <span>Filters</span>
+        </Button>
+      </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center space-x-2 mt-8">
-            <Button
-              variant="outline"
-              onClick={goToPreviousPage}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      <div className="lg:flex lg:gap-8">
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <aside className="hidden lg:block w-1/3 max-w-xs space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Industry</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {industries.map(industry => (
+                  <div key={industry} className="flex items-center space-x-2">
+                    <Checkbox 
+                      id={`industry-${industry}`}
+                      checked={selectedIndustries.includes(industry)}
+                      onCheckedChange={(checked) => handleIndustryChange(industry, checked as boolean)}
+                    />
+                    <Label 
+                      htmlFor={`industry-${industry}`} 
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {industry}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">City</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select value={selectedCity} onValueChange={handleCityChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Cities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        </aside>
+
+        {/* Mobile Filters Modal */}
+        {isMobileFiltersOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
+            <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-xl">
+              <div className="flex items-center justify-between p-4 border-b">
+                <h2 className="text-lg font-semibold">Filters</h2>
                 <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
+                  variant="ghost"
                   size="sm"
-                  onClick={() => goToPage(page)}
-                  className={currentPage === page ? "text-white" : ""}
-                  style={currentPage === page ? { backgroundColor: '#0B4168' } : {}}
+                  onClick={() => setIsMobileFiltersOpen(false)}
                 >
-                  {page}
+                  <X className="h-5 w-5" />
                 </Button>
-              ))}
+              </div>
+              
+              <div className="p-4 space-y-6 overflow-y-auto h-full pb-20">
+                {/* Industry Filter */}
+                <div>
+                  <h3 className="text-base font-medium mb-3">Industry</h3>
+                  <div className="space-y-3">
+                    {industries.map(industry => (
+                      <div key={industry} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`mobile-industry-${industry}`}
+                          checked={selectedIndustries.includes(industry)}
+                          onCheckedChange={(checked) => handleIndustryChange(industry, checked as boolean)}
+                        />
+                        <Label 
+                          htmlFor={`mobile-industry-${industry}`} 
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {industry}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* City Filter */}
+                <div>
+                  <h3 className="text-base font-medium mb-3">City</h3>
+                  <Select value={selectedCity} onValueChange={handleCityChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All Cities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Cities</SelectItem>
+                      {cities.map(city => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t">
+                <Button
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="w-full"
+                  style={{ backgroundColor: '#0B4168' }}
+                >
+                  Show {filteredCompanies.length} Results
+                </Button>
+              </div>
             </div>
-
-            <Button
-              variant="outline"
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
           </div>
         )}
-      </section>
+
+        {/* Main content area */}
+        <section className="flex-1">
+          {/* Results count for desktop */}
+          <div className="hidden lg:block text-sm text-gray-600 mb-6">
+            {filteredCompanies.length} companies found
+          </div>
+          
+          {/* Business Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+            {currentCompanies.map(company => (
+              <BusinessCard key={company.id} company={company} />
+            ))}
+          </div>
+
+          {/* No results state */}
+          {filteredCompanies.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No companies found</p>
+              <p className="text-gray-400 text-sm mt-2">Try adjusting your filters or search term</p>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-2 mt-8">
+              <Button
+                variant="outline"
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                className="w-full sm:w-auto"
+              >
+                Previous
+              </Button>
+              
+              <div className="flex items-center space-x-1 overflow-x-auto">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => goToPage(page)}
+                    className={`${currentPage === page ? "text-white" : ""} min-w-[40px]`}
+                    style={currentPage === page ? { backgroundColor: '#0B4168' } : {}}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="w-full sm:w-auto"
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

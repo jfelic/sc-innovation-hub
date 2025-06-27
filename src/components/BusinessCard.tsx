@@ -35,42 +35,42 @@ export function BusinessCard({ company }: BusinessCardProps) {
     : company.description;
 
   return (
-    <Card className="w-full max-w-sm h-96 flex flex-col">
-      <CardHeader className="flex-shrink-0">
-        <div className="flex items-center space-x-4 font-bold">
-          <CardTitle>{company.name}</CardTitle>
+    <Card className="w-full h-80 md:h-96 flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-3">
+        <div className="flex items-start justify-between">
+          <CardTitle className="text-base md:text-lg leading-tight">{company.name}</CardTitle>
         </div>
-        <CardDescription>
-          {company.industry.join(', ')}
+        <CardDescription className="text-xs md:text-sm">
+          {company.industry.slice(0, 2).join(', ')}{company.industry.length > 2 && '...'}
         </CardDescription>
-        <CardDescription>
+        <CardDescription className="text-xs md:text-sm">
           {company.city}, {company.state}
         </CardDescription>
         {company.size && (
-          <CardDescription>
+          <CardDescription className="text-xs md:text-sm">
             {company.size} Employees
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent className="flex flex-col flex-grow overflow-hidden">
+      <CardContent className="flex flex-col flex-grow overflow-hidden pt-0">
         <div className="flex-grow overflow-y-auto">
           {company.description && (
-            <div className="text-sm">
-              <p>{displayDescription}</p>
+            <div className="text-xs md:text-sm">
+              <p className="leading-relaxed">{displayDescription}</p>
               {shouldTruncate && (
                 <Button
                   variant="link"
-                  className="h-auto px-0 py-0 mt-1 flex items-center gap-1 justify-start"
-                  style={{ color: '#0B4168', padding: '0.25rem 0' }}
+                  className="h-auto px-0 py-1 mt-2 flex items-center gap-1 justify-start text-xs md:text-sm"
+                  style={{ color: '#0B4168' }}
                   onClick={() => setIsExpanded(!isExpanded)}
                 >
                   {isExpanded ? (
                     <>
-                      Read Less <ChevronUp className="h-4 w-4" />
+                      Read Less <ChevronUp className="h-3 w-3 md:h-4 md:w-4" />
                     </>
                   ) : (
                     <>
-                      Read More <ChevronDown className="h-4 w-4" />
+                      Read More <ChevronDown className="h-3 w-3 md:h-4 md:w-4" />
                     </>
                   )}
                 </Button>
@@ -78,19 +78,21 @@ export function BusinessCard({ company }: BusinessCardProps) {
             </div>
           )}
         </div>
-        <div className="flex justify-start mt-4 flex-shrink-0">
+        <div className="flex justify-start mt-3 flex-shrink-0">
           {company.website ? (
             <Button 
+              size="sm"
               style={{ backgroundColor: '#0B4168' }} 
-              className="hover:bg-blue-800 hover:scale-105 transition-all duration-200"
+              className="hover:bg-blue-800 hover:scale-105 transition-all duration-200 text-xs md:text-sm px-3 py-2 md:px-4 md:py-2 min-h-[36px] md:min-h-[40px]"
               onClick={() => window.open(company.website!, '_blank')}
             >
               More Info
             </Button>
           ) : (
             <Button 
+              size="sm"
               style={{ backgroundColor: '#6B7280' }} 
-              className="cursor-not-allowed opacity-50"
+              className="cursor-not-allowed opacity-50 text-xs md:text-sm px-3 py-2 md:px-4 md:py-2 min-h-[36px] md:min-h-[40px]"
               disabled
             >
               No Website
