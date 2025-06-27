@@ -2,7 +2,7 @@
 
 // Import NextAuth helpers, React hooks, icons, and Radix UI Toggle
 import { signIn, getProviders, useSession } from "next-auth/react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { useRouter } from "next/navigation"
 import { Globe, Eye, EyeOff } from "lucide-react"
@@ -14,14 +14,26 @@ interface Provider {
   type: string
 }
 
+// Separate component for registration success message to handle useSearchParams
+function RegistrationSuccessMessage() {
+  const searchParams = useSearchParams()
+  const registered = searchParams.get('registered')
+  
+  if (!registered) return null
+  
+  return (
+    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+      <p className="text-sm font-medium">Registration successful!</p>
+      <p className="text-sm">Please sign in with your new account.</p>
+    </div>
+  )
+}
+
 export default function SignInPage() {
   // State for available providers (Google, Credentials, etc.)
   const [providers, setProviders] = useState<Record<string, Provider> | null>(null)
   // State to toggle password visibility
   const [showPassword, setShowPassword] = useState(false)
-  // Get URL search params to check for registration success
-  const searchParams = useSearchParams()
-  const registered = searchParams.get('registered')
   // Check current session status
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -97,17 +109,14 @@ export default function SignInPage() {
             Sign in to SC Innovation Hub
           </h2>
           <p className="mt-2 text-center text-sm text-muted-foreground">
-            Connect with South Carolina's innovation ecosystem
+            Connect with South Carolina&apos;s innovation ecosystem
           </p>
         </div>
 
         {/* Registration success message */}
-        {registered && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-            <p className="text-sm font-medium">Registration successful!</p>
-            <p className="text-sm">Please sign in with your new account.</p>
-          </div>
-        )}
+        <Suspense fallback={null}>
+          <RegistrationSuccessMessage />
+        </Suspense>
 
 
         <div className="mt-8 space-y-4">
@@ -167,7 +176,7 @@ export default function SignInPage() {
 
           {/* Link to registration page */}
           <div className="text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a
               href="/auth/register"
               className="text-primary hover:text-primary/80 font-medium"
