@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ChevronDown, ChevronUp, Heart } from "lucide-react";
+import { useSession } from "next-auth/react";
 import type { Company } from "@/generated/prisma";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,8 +28,60 @@ interface BusinessCardProps {
  */
 export function BusinessCard({ company }: BusinessCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
   const descriptionLimit = 150;
   const shouldTruncate = company.description && company.description.length > descriptionLimit;
+
+  // Function to check if the company is already favorited by the user
+  const checkIfFavorited = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/companies/${company.id}/favorite`);
+      if (response.ok) {
+        const data = await response.json();
+        setIsFavorited(data.isFavorited);
+      }
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+    }
+  }, [company.id]);
+
+  // Check if company is favorited on component mount
+  useEffect(() => {
+    if (session?.user?.id) {
+      checkIfFavorited();
+    }
+  }, [session?.user?.id, checkIfFavorited]);
+
+  // Function to handle favoriting/unfavoriting a company
+  const handleFavoriteToggle = async () => {
+    if (!session?.user?.id) {
+      // Redirect to login if not authenticated
+      window.location.href = '/auth/signin';
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/companies/${company.id}/favorite`, {
+        method: isFavorited ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setIsFavorited(!isFavorited);
+      } else {
+        console.error('Failed to toggle favorite');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const displayDescription = shouldTruncate && !isExpanded 
     ? company.description?.substring(0, descriptionLimit) + "..."
@@ -39,6 +92,24 @@ export function BusinessCard({ company }: BusinessCardProps) {
       <CardHeader className="flex-shrink-0 pb-3">
         <div className="flex items-start justify-between">
           <CardTitle className="text-base md:text-lg leading-tight">{company.name}</CardTitle>
+          {/* Favorite button - only show if user is logged in */}
+          {session && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleFavoriteToggle}
+              disabled={isLoading}
+              className="p-1 h-8 w-8 hover:bg-red-50"
+            >
+              <Heart 
+                className={`h-4 w-4 ${
+                  isFavorited 
+                    ? 'fill-red-500 text-red-500' 
+                    : 'text-gray-400 hover:text-red-500'
+                }`}
+              />
+            </Button>
+          )}
         </div>
         <CardDescription className="text-xs md:text-sm">
           {company.industry.slice(0, 2).join(', ')}{company.industry.length > 2 && '...'}

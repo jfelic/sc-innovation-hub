@@ -1,8 +1,11 @@
 "use client"
 
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
-import { Calendar, MapPin, ExternalLink, Clock } from "lucide-react";
+import { Calendar, MapPin, ExternalLink, Clock, Heart } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface Event {
   id: string;
@@ -28,6 +31,70 @@ interface EventsListProps {
 }
 
 export function EventsList({ events, selectedEventId, onEventSelect }: EventsListProps) {
+  const [favoriteStates, setFavoriteStates] = useState<Record<string, boolean>>({});
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+  const { data: session } = useSession();
+
+  // Function to check if an event is favorited by the user
+  const checkIfFavorited = useCallback(async (eventId: string) => {
+    try {
+      const response = await fetch(`/api/events/${eventId}/favorite`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.isFavorited;
+      }
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+    }
+    return false;
+  }, []);
+
+  // Load favorite states for all events on component mount
+  useEffect(() => {
+    if (session?.user?.id && events.length > 0) {
+      const loadFavoriteStates = async () => {
+        const states: Record<string, boolean> = {};
+        for (const event of events) {
+          states[event.id] = await checkIfFavorited(event.id);
+        }
+        setFavoriteStates(states);
+      };
+      loadFavoriteStates();
+    }
+  }, [session?.user?.id, events, checkIfFavorited]);
+
+  // Function to handle favoriting/unfavoriting an event
+  const handleFavoriteToggle = async (eventId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click event
+    
+    if (!session?.user?.id) {
+      // Redirect to login if not authenticated
+      window.location.href = '/auth/signin';
+      return;
+    }
+
+    setLoadingStates(prev => ({ ...prev, [eventId]: true }));
+    try {
+      const isFavorited = favoriteStates[eventId];
+      const response = await fetch(`/api/events/${eventId}/favorite`, {
+        method: isFavorited ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setFavoriteStates(prev => ({ ...prev, [eventId]: !isFavorited }));
+      } else {
+        console.error('Failed to toggle favorite');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
@@ -62,7 +129,7 @@ export function EventsList({ events, selectedEventId, onEventSelect }: EventsLis
                 onClick={() => isPhysicalEvent && onEventSelect?.(event.id)}
               >
               <CardContent className="p-4">
-                {/* Event Title and Logo */}
+                {/* Event Title, Logo, and Favorite Button */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 text-sm leading-tight">
@@ -74,13 +141,33 @@ export function EventsList({ events, selectedEventId, onEventSelect }: EventsLis
                       </p>
                     )}
                   </div>
-                  {event.logoUrl && (
-                    <img 
-                      src={event.logoUrl} 
-                      alt={event.title}
-                      className="w-10 h-10 rounded object-cover ml-3 flex-shrink-0"
-                    />
-                  )}
+                  <div className="flex items-center space-x-2 ml-3">
+                    {/* Favorite button - only show if user is logged in */}
+                    {session && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleFavoriteToggle(event.id, e)}
+                        disabled={loadingStates[event.id]}
+                        className="p-1 h-8 w-8 hover:bg-red-50"
+                      >
+                        <Heart 
+                          className={`h-4 w-4 ${
+                            favoriteStates[event.id] 
+                              ? 'fill-red-500 text-red-500' 
+                              : 'text-gray-400 hover:text-red-500'
+                          }`}
+                        />
+                      </Button>
+                    )}
+                    {event.logoUrl && (
+                      <img 
+                        src={event.logoUrl} 
+                        alt={event.title}
+                        className="w-10 h-10 rounded object-cover flex-shrink-0"
+                      />
+                    )}
+                  </div>
                 </div>
 
                 {/* Date and Time */}
