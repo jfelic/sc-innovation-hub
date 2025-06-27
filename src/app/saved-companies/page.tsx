@@ -47,7 +47,7 @@ export default async function SavedCompaniesPage() {
         <nav className="mb-8">
           <div className="flex items-center text-sm text-gray-500">
             <Link href="/account-dashboard" className="hover:text-gray-700">Account</Link>
-            <span className="mx-2">></span>
+            <span className="mx-2">&gt;</span>
             <span className="text-gray-900">Saved Companies</span>
           </div>
         </nav>
