@@ -41,7 +41,7 @@ export default async function SavedEventsPage() {
   console.log('Events data:', events);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white" style={{ backgroundColor: '#FFFFFF' }}>
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">

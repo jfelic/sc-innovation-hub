@@ -78,7 +78,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-white" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Card container */}
       <div className="max-w-md w-full space-y-8 bg-card p-8 shadow-lg border border-border rounded-xl">
         {/* Header with icon and title */}

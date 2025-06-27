@@ -12,7 +12,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const searchTerm = params.search || "";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white" style={{ backgroundColor: '#FFFFFF' }}>
       <Navbar />
       <Hero />
       <BusinessDirectory searchTerm={searchTerm} />

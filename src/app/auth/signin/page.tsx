@@ -76,7 +76,7 @@ export default function SignInPage() {
   // Show loading while checking session
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-white" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
@@ -88,7 +88,7 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-white" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Card container */}
       <div className="max-w-md w-full space-y-8 bg-card p-8 shadow-lg border border-border rounded-xl">
         {/* Header */}

@@ -15,7 +15,7 @@ export default function AccountDashboard() {
   // Show loading state while checking session
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white" style={{ backgroundColor: '#FFFFFF' }}>
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
@@ -34,7 +34,7 @@ export default function AccountDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Navigation Bar */}
       <Navbar />
       
