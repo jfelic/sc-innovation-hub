@@ -45,7 +45,7 @@ export default function AccountDashboard() {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Account Dashboard</h1>
           <div className="space-y-2">
             <h2 className="text-xl text-gray-700">Hi {session.user?.name || session.user?.email}!</h2>
-            <p className="text-gray-600">You're one step closer to being plugged into South Carolina's innovation scene.</p>
+            <p className="text-gray-600">You&apos;re one step closer to being plugged into South Carolina&apos;s innovation scene.</p>
           </div>
         </div>
 
