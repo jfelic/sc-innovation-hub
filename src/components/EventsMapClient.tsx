@@ -158,8 +158,13 @@ const geocodeAddress = async (address: string, city: string, state: string): Pro
       return null;
     }
   } catch (error) {
-    console.error('Geocoding error:', error);
-    // Cache error result to avoid retrying
+    console.error('Geocoding error for address:', fullAddress, error);
+    // Don't cache network errors - only cache actual "not found" results
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      // Network error - don't cache, allow retry
+      return null;
+    }
+    // Cache actual geocoding failures
     geocodeCache.set(cacheKey, null);
     saveCacheToStorage();
     return null;
@@ -174,21 +179,24 @@ export default function EventsMapClient({ events, selectedEventId }: EventsMapCl
     const geocodeEvents = async () => {
       setIsLoading(true);
       
-      // Filter events that have physical addresses
+      // Filter events that have physical addresses (more lenient filtering)
       const physicalEvents = events.filter(event => 
         !event.isVirtual && 
         event.venue !== 'Online' && 
-        event.address && 
+        (event.address || event.venue) && // Allow either address OR venue
         event.city && 
         event.state
       );
+
+      console.log(`Filtered ${physicalEvents.length} physical events out of ${events.length} total events`);
 
       const geocodedEvents: EventWithCoordinates[] = [];
       const uncachedEvents: Event[] = [];
 
       // First pass: check cache for existing coordinates
       for (const event of physicalEvents) {
-        const fullAddress = `${event.address}, ${event.city}, ${event.state}`;
+        const addressPart = event.address || event.venue || '';
+        const fullAddress = `${addressPart}, ${event.city}, ${event.state}`;
         const cacheKey = fullAddress.toLowerCase().trim();
         
         if (geocodeCache.has(cacheKey)) {
@@ -211,10 +219,11 @@ export default function EventsMapClient({ events, selectedEventId }: EventsMapCl
 
       // Second pass: geocode uncached events with rate limiting
       for (const event of uncachedEvents) {
-        // Add a small delay to respect rate limits (only for actual API calls)
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Add proper delay to respect OpenStreetMap rate limits (1 request/second)
+        await new Promise(resolve => setTimeout(resolve, 1100));
         
-        const coordinates = await geocodeAddress(event.address!, event.city, event.state);
+        const addressPart = event.address || event.venue || '';
+        const coordinates = await geocodeAddress(addressPart, event.city, event.state);
         
         geocodedEvents.push({
           ...event,
@@ -222,7 +231,9 @@ export default function EventsMapClient({ events, selectedEventId }: EventsMapCl
         });
       }
 
-      setEventsWithCoordinates(geocodedEvents.filter(event => event.coordinates));
+      const finalEvents = geocodedEvents.filter(event => event.coordinates);
+      console.log(`Successfully geocoded ${finalEvents.length} events with coordinates`);
+      setEventsWithCoordinates(finalEvents);
       setIsLoading(false);
     };
 
