@@ -124,14 +124,15 @@ export function BusinessCard({ company }: BusinessCardProps) {
         )}
       </CardHeader>
       <CardContent className="flex flex-col flex-grow overflow-hidden pt-0">
-        <div className="flex-grow overflow-y-auto">
+        <div className={`flex-grow ${isExpanded ? 'overflow-y-auto' : 'overflow-hidden'}`}>
           {company.description && (
             <div className="text-xs md:text-sm">
               <p className="leading-relaxed">{displayDescription}</p>
               {shouldTruncate && (
                 <Button
                   variant="link"
-                  className="h-auto px-0 py-1 mt-2 flex items-center gap-1 justify-start text-xs md:text-sm"
+                  size={null}
+                  className="h-auto !px-0 py-1 mt-0 mx-0 flex items-center gap-1 justify-start text-xs md:text-sm"
                   style={{ color: '#0B4168' }}
                   onClick={() => setIsExpanded(!isExpanded)}
                 >
