@@ -31,7 +31,7 @@ export function BusinessCard({ company }: BusinessCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { data: session } = useSession();
-  const descriptionLimit = 150;
+  const descriptionLimit = 100;
   const shouldTruncate = company.description && company.description.length > descriptionLimit;
 
   // Function to check if the company is already favorited by the user
