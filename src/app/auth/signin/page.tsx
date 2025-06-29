@@ -34,6 +34,9 @@ export default function SignInPage() {
   const [providers, setProviders] = useState<Record<string, Provider> | null>(null)
   // State to toggle password visibility
   const [showPassword, setShowPassword] = useState(false)
+  // State for error messages and loading
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   // Check current session status
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -61,6 +64,9 @@ export default function SignInPage() {
   // Handles sign-in with email/password (credentials)
   async function handleCredentialsSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setError(null)
+    setIsLoading(true)
+    
     const formData = new FormData(e.currentTarget)
     const email = formData.get("email") as string
     const password = formData.get("password") as string
@@ -74,14 +80,21 @@ export default function SignInPage() {
       })
 
       if (result?.error) {
-        // Handle error (show a toast or error message)
-        console.error(result.error)
+        // Show user-friendly error message
+        if (result.error === "CredentialsSignin") {
+          setError("Invalid email or password. Please check your credentials and try again.")
+        } else {
+          setError("An error occurred during sign in. Please try again.")
+        }
       } else {
         // On success, redirect to home
         window.location.href = "/"
       }
     } catch (error) {
       console.error("Sign in error:", error)
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -118,6 +131,13 @@ export default function SignInPage() {
           <RegistrationSuccessMessage />
         </Suspense>
 
+        {/* Error message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            <p className="text-sm font-medium">Sign In Failed</p>
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
 
         <div className="mt-8 space-y-4">
           {/* Email/password sign-in form */}
@@ -168,9 +188,17 @@ export default function SignInPage() {
             {/* Submit button */}
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition"
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                  Signing In...
+                </div>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </form>
 
