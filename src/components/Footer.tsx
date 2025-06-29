@@ -79,6 +79,14 @@ export function Footer() {
                   Saved Events
                 </Link>
               </li>
+              <li>
+                <Link 
+                  href="/news" 
+                  className="text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  News
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -88,7 +96,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link 
-                  href="/privacy" 
+                  href="/privacy-policy" 
                   className="text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Privacy Policy
@@ -96,7 +104,7 @@ export function Footer() {
               </li>
               <li>
                 <Link 
-                  href="/terms" 
+                  href="/tos" 
                   className="text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Terms of Service
